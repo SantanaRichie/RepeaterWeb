@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Repeater Web</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <h1>Repeater App</h1>
+
+        <!-- File Selection -->
+        <div class="section">
+            <label>Selected File:</label>
+            <div id="fileNameView" class="file-name-display">No file selected</div>
+            <input type="file" id="fileInput" accept="audio/*" style="display: none;">
+            <button id="selectFileButton" class="btn full-width">Select Song</button>
+        </div>
+
+        <!-- Playback Controls -->
+        <div class="controls-row">
+            <button id="playButton" class="btn">Play</button>
+            <button id="pauseButton" class="btn">Pause</button>
+            <button id="stopButton" class="btn">Stop</button>
+        </div>
+
+        <!-- Time Display -->
+        <div class="time-info">
+            <div id="currentTimeView">Current: 00:00</div>
+            <div id="durationView">Duration: 00:00</div>
+            <div id="startTimeView">Start: 00:00</div>
+            <div id="endTimeView">End: 00:00</div>
+        </div>
+
+        <!-- Seek Bar -->
+        <input type="range" id="seekBar" value="0" min="0" step="0.1" class="seek-bar">
+
+        <!-- Loop Controls -->
+        <div class="section">
+            <label>Loop Section:</label>
+            <div class="controls-row">
+                <button id="setStartButton" class="btn">Set Start</button>
+                <button id="setEndButton" class="btn">Set End</button>
+                <button id="loopToggle" class="btn toggle-btn">Loop: OFF</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
