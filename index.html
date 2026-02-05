@@ -22,9 +22,11 @@
 
         <!-- Playback Controls -->
         <div class="controls-row">
+            <button id="rewindButton" class="btn">-10s</button>
             <button id="playButton" class="btn">Play</button>
             <button id="pauseButton" class="btn">Pause</button>
             <button id="stopButton" class="btn">Stop</button>
+            <button id="forwardButton" class="btn">+10s</button>
         </div>
 
         <!-- Time Display -->
@@ -45,6 +47,15 @@
                 <button id="setStartButton" class="btn">Set Start</button>
                 <button id="setEndButton" class="btn">Set End</button>
                 <button id="loopToggle" class="btn toggle-btn">Loop: OFF</button>
+            </div>
+        </div>
+
+        <!-- Recording Controls -->
+        <div class="section">
+            <label>Recording:</label>
+            <div class="controls-row">
+                <button id="recordButton" class="btn toggle-btn">Record Audio</button>
+                <button id="downloadButton" class="btn" disabled>Download</button>
             </div>
         </div>
 

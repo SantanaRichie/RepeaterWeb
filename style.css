@@ -79,6 +79,12 @@ label {
     background-color: #b71c1c;
 }
 
+.btn:disabled {
+    background-color: #e0e0e0;
+    color: #9e9e9e;
+    cursor: not-allowed;
+}
+
 .btn.full-width {
     width: 100%;
 }
