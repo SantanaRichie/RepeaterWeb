@@ -152,7 +152,8 @@ installButton.addEventListener('click', async () => {
 // Register Service Worker (Required for PWA installation)
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js')
-        .then(() => console.log("Service Worker Registered"));
+        .then(() => console.log("Service Worker Registered"))
+        .catch((err) => console.error("Service Worker Failed:", err));
 }
 
 // --- Core Logic ---
