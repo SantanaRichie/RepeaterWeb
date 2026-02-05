@@ -73,6 +73,9 @@ label {
     font-weight: bold;
     cursor: pointer;
     transition: background-color 0.2s;
+    text-decoration: none;
+    text-align: center;
+    box-sizing: border-box;
 }
 
 .btn:hover {
