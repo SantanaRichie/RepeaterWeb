@@ -1,4 +1,4 @@
-const CACHE_NAME = 'repeater-web-v10';
+const CACHE_NAME = 'repeater-web-v11';
 const ASSETS = [
   './index.html',
   './style.css',

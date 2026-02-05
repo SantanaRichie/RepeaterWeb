@@ -79,6 +79,8 @@ tapTempoBtn.addEventListener('click', (e) => {
 playButton.addEventListener('click', () => {
     if (audio.src && currentFileName) {
         audio.play().then(() => {
+            // Safari fix: Re-apply playback rate
+            audio.playbackRate = parseFloat(speedBar.value);
             playButton.textContent = "Playing...";
             startUpdateLoop();
         }).catch(err => console.error("Playback error:", err));
@@ -132,6 +134,7 @@ seekBar.addEventListener('input', () => {
 speedBar.addEventListener('input', () => {
     const speed = parseFloat(speedBar.value);
     audio.playbackRate = speed;
+    audio.defaultPlaybackRate = speed; // changing defaultPlaybackRate allows Safari to remember the speed when pausing/playing
     speedValue.textContent = speed.toFixed(2) + "x";
 });
 
