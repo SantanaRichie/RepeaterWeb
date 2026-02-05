@@ -1,0 +1,15 @@
+{
+  "name": "Repeater Web",
+  "short_name": "Repeater",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#1e1e1e",
+  "theme_color": "#3700b3",
+  "icons": [
+    {
+      "src": "repeaterlogo2.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}

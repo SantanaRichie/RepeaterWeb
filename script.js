@@ -21,6 +21,7 @@ const seekBar = document.getElementById('seekBar');
 const setStartButton = document.getElementById('setStartButton');
 const setEndButton = document.getElementById('setEndButton');
 const loopToggle = document.getElementById('loopToggle');
+const installButton = document.getElementById('installButton');
 
 // --- Initialization & Event Listeners ---
 
@@ -116,6 +117,34 @@ loopToggle.addEventListener('click', () => {
     } else {
         loopToggle.textContent = "Loop: OFF";
         loopToggle.classList.remove("active");
+    }
+});
+
+// --- PWA Install Logic ---
+let deferredPrompt;
+
+// Check for iOS
+const isIos = /iPhone|iPad|iPod/.test(navigator.userAgent) && !window.MSStream;
+const isInStandaloneMode = ('standalone' in window.navigator) && (window.navigator.standalone);
+
+// If on iOS and not already installed, show the button to give instructions
+if (isIos && !isInStandaloneMode) {
+    installButton.style.display = 'block';
+}
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installButton.style.display = 'block';
+});
+
+installButton.addEventListener('click', async () => {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        deferredPrompt = null;
+    } else if (isIos) {
+        alert("To install on iPhone/iPad:\n1. Tap the Share button (square with arrow)\n2. Scroll down and tap 'Add to Home Screen'");
     }
 });
 
