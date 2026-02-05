@@ -13,6 +13,8 @@ const selectFileButton = document.getElementById('selectFileButton');
 const playButton = document.getElementById('playButton');
 const pauseButton = document.getElementById('pauseButton');
 const stopButton = document.getElementById('stopButton');
+const rewindButton = document.getElementById('rewindButton');
+const forwardButton = document.getElementById('forwardButton');
 const currentTimeView = document.getElementById('currentTimeView');
 const durationView = document.getElementById('durationView');
 const startTimeView = document.getElementById('startTimeView');
@@ -21,6 +23,8 @@ const seekBar = document.getElementById('seekBar');
 const setStartButton = document.getElementById('setStartButton');
 const setEndButton = document.getElementById('setEndButton');
 const loopToggle = document.getElementById('loopToggle');
+const recordButton = document.getElementById('recordButton');
+const downloadButton = document.getElementById('downloadButton');
 const installButton = document.getElementById('installButton');
 
 // --- Initialization & Event Listeners ---
@@ -62,6 +66,22 @@ stopButton.addEventListener('click', () => {
     cancelAnimationFrame(animationFrameId);
     updateTimeDisplay();
     seekBar.value = audio.currentTime;
+});
+
+rewindButton.addEventListener('click', () => {
+    if (audio.src) {
+        audio.currentTime -= 10;
+        updateTimeDisplay();
+        seekBar.value = audio.currentTime;
+    }
+});
+
+forwardButton.addEventListener('click', () => {
+    if (audio.src) {
+        audio.currentTime += 10;
+        updateTimeDisplay();
+        seekBar.value = audio.currentTime;
+    }
 });
 
 // Seek Bar
@@ -117,6 +137,70 @@ loopToggle.addEventListener('click', () => {
     } else {
         loopToggle.textContent = "Loop: OFF";
         loopToggle.classList.remove("active");
+    }
+});
+
+// --- Recording Logic ---
+let mediaRecorder;
+let audioChunks = [];
+let recordingUrl = null;
+let audioCtx;
+let audioSourceNode;
+let mediaDest;
+
+recordButton.addEventListener('click', async () => {
+    if (mediaRecorder && mediaRecorder.state === "recording") {
+        mediaRecorder.stop();
+        recordButton.textContent = "Record Audio";
+        recordButton.classList.remove("active");
+    } else {
+        try {
+            // Setup Web Audio API to capture the audio element
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                audioSourceNode = audioCtx.createMediaElementSource(audio);
+                mediaDest = audioCtx.createMediaStreamDestination();
+                
+                // Connect source to destination (for recording) and speakers (for listening)
+                audioSourceNode.connect(mediaDest);
+                audioSourceNode.connect(audioCtx.destination);
+            }
+            if (audioCtx.state === 'suspended') await audioCtx.resume();
+
+            const stream = mediaDest.stream;
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) audioChunks.push(event.data);
+            };
+
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                if (recordingUrl) URL.revokeObjectURL(recordingUrl);
+                recordingUrl = URL.createObjectURL(audioBlob);
+                downloadButton.disabled = false;
+            };
+
+            mediaRecorder.start();
+            recordButton.textContent = "Stop Recording";
+            recordButton.classList.add("active");
+            downloadButton.disabled = true;
+        } catch (err) {
+            console.error("Error recording audio:", err);
+            alert("Could not start recording.");
+        }
+    }
+});
+
+downloadButton.addEventListener('click', () => {
+    if (recordingUrl) {
+        const a = document.createElement('a');
+        a.href = recordingUrl;
+        a.download = `recording_${Date.now()}.webm`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
     }
 });
 
