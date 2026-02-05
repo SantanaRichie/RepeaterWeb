@@ -141,48 +141,90 @@ loopToggle.addEventListener('click', () => {
 });
 
 // --- Recording Logic ---
-let mediaRecorder;
+let isRecording = false;
+let mp3Encoder;
+let processor;
 let audioChunks = [];
 let recordingUrl = null;
 let audioCtx;
 let audioSourceNode;
-let mediaDest;
 
 recordButton.addEventListener('click', async () => {
-    if (mediaRecorder && mediaRecorder.state === "recording") {
-        mediaRecorder.stop();
+    if (isRecording) {
+        // --- STOP RECORDING ---
+        isRecording = false;
         recordButton.textContent = "Record Audio";
         recordButton.classList.remove("active");
+
+        if (processor && mp3Encoder) {
+            // Stop processing
+            processor.disconnect();
+            audioSourceNode.disconnect(processor);
+
+            // Flush the last bit of audio
+            const mp3Data = mp3Encoder.flush();
+            if (mp3Data.length > 0) audioChunks.push(mp3Data);
+
+            // Create MP3 Blob
+            const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+            if (recordingUrl) URL.revokeObjectURL(recordingUrl);
+            recordingUrl = URL.createObjectURL(audioBlob);
+            downloadButton.disabled = false;
+            
+            processor = null;
+            mp3Encoder = null;
+        }
     } else {
+        // --- START RECORDING ---
         try {
             // Setup Web Audio API to capture the audio element
             if (!audioCtx) {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 audioSourceNode = audioCtx.createMediaElementSource(audio);
-                mediaDest = audioCtx.createMediaStreamDestination();
-                
-                // Connect source to destination (for recording) and speakers (for listening)
-                audioSourceNode.connect(mediaDest);
+                // Connect source to speakers so you can still hear it
                 audioSourceNode.connect(audioCtx.destination);
             }
             if (audioCtx.state === 'suspended') await audioCtx.resume();
 
-            const stream = mediaDest.stream;
-            mediaRecorder = new MediaRecorder(stream);
+            // Initialize LameJS Encoder (Stereo, Sample Rate, 128kbps)
+            mp3Encoder = new lamejs.Mp3Encoder(2, audioCtx.sampleRate, 128);
             audioChunks = [];
 
-            mediaRecorder.ondataavailable = (event) => {
-                if (event.data.size > 0) audioChunks.push(event.data);
+            // Create a ScriptProcessor to intercept audio
+            processor = audioCtx.createScriptProcessor(4096, 2, 2);
+            
+            processor.onaudioprocess = (event) => {
+                if (!isRecording) return;
+
+                const left = event.inputBuffer.getChannelData(0);
+                const right = event.inputBuffer.getChannelData(1);
+
+                // Convert Float32 (-1 to 1) to Int16 for LameJS
+                const samplesLeft = new Int16Array(left.length);
+                const samplesRight = new Int16Array(right.length);
+
+                for (let i = 0; i < left.length; i++) {
+                    samplesLeft[i] = left[i] < 0 ? left[i] * 0x8000 : left[i] * 0x7FFF;
+                    samplesRight[i] = right[i] < 0 ? right[i] * 0x8000 : right[i] * 0x7FFF;
+                }
+
+                // Encode buffer
+                const mp3Data = mp3Encoder.encodeBuffer(samplesLeft, samplesRight);
+                if (mp3Data.length > 0) audioChunks.push(mp3Data);
+
+                // Mute output of processor to avoid feedback/doubling volume
+                // (Since audioSourceNode is already connected to destination)
+                const outputBuffer = event.outputBuffer;
+                for (let ch = 0; ch < outputBuffer.numberOfChannels; ch++) {
+                    outputBuffer.getChannelData(ch).fill(0);
+                }
             };
 
-            mediaRecorder.onstop = () => {
-                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                if (recordingUrl) URL.revokeObjectURL(recordingUrl);
-                recordingUrl = URL.createObjectURL(audioBlob);
-                downloadButton.disabled = false;
-            };
+            // Connect graph
+            audioSourceNode.connect(processor);
+            processor.connect(audioCtx.destination); // Required for Chrome to fire events
 
-            mediaRecorder.start();
+            isRecording = true;
             recordButton.textContent = "Stop Recording";
             recordButton.classList.add("active");
             downloadButton.disabled = true;
@@ -197,7 +239,7 @@ downloadButton.addEventListener('click', () => {
     if (recordingUrl) {
         const a = document.createElement('a');
         a.href = recordingUrl;
-        a.download = `recording_${Date.now()}.webm`;
+        a.download = `recording_${Date.now()}.mp3`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
