@@ -25,6 +25,14 @@ h1 {
     color: #bb86fc;
 }
 
+.logo {
+    display: block;
+    margin: 0 auto 24px auto;
+    max-width: 100%;
+    height: auto;
+    max-height: 120px;
+}
+
 .section {
     margin-bottom: 20px;
 }
