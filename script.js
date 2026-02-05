@@ -8,8 +8,10 @@ let animationFrameId;
 
 // UI Elements
 const fileNameView = document.getElementById('fileNameView');
+const bpmView = document.getElementById('bpmView');
 const fileInput = document.getElementById('fileInput');
 const selectFileButton = document.getElementById('selectFileButton');
+const tapTempoBtn = document.getElementById('tapTempoBtn');
 const playButton = document.getElementById('playButton');
 const pauseButton = document.getElementById('pauseButton');
 const stopButton = document.getElementById('stopButton');
@@ -20,6 +22,8 @@ const durationView = document.getElementById('durationView');
 const startTimeView = document.getElementById('startTimeView');
 const endTimeView = document.getElementById('endTimeView');
 const seekBar = document.getElementById('seekBar');
+const speedBar = document.getElementById('speedBar');
+const speedValue = document.getElementById('speedValue');
 const setStartButton = document.getElementById('setStartButton');
 const setEndButton = document.getElementById('setEndButton');
 const loopToggle = document.getElementById('loopToggle');
@@ -36,6 +40,38 @@ fileInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
         loadAudioFile(file);
+    }
+});
+
+// Tap Tempo Logic
+let tapTimes = [];
+tapTempoBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    const now = Date.now();
+    
+    // Reset if pause is too long (2 seconds)
+    if (tapTimes.length > 0 && now - tapTimes[tapTimes.length - 1] > 2000) {
+        tapTimes = [];
+    }
+    
+    tapTimes.push(now);
+    
+    // Keep only the last 5 taps for better responsiveness
+    if (tapTimes.length > 5) {
+        tapTimes.shift();
+    }
+
+    if (tapTimes.length >= 5) {
+        // Calculate intervals
+        let intervals = [];
+        for (let i = 1; i < tapTimes.length; i++) {
+            intervals.push(tapTimes[i] - tapTimes[i - 1]);
+        }
+        const avgInterval = intervals.reduce((a, b) => a + b) / intervals.length;
+        const bpm = Math.round(60000 / avgInterval);
+        bpmView.textContent = bpm;
+    } else {
+        bpmView.textContent = 5 - tapTimes.length;
     }
 });
 
@@ -92,6 +128,13 @@ seekBar.addEventListener('input', () => {
     }
 });
 
+// Speed Control
+speedBar.addEventListener('input', () => {
+    const speed = parseFloat(speedBar.value);
+    audio.playbackRate = speed;
+    speedValue.textContent = speed.toFixed(2) + "x";
+});
+
 // Loop Controls
 setStartButton.addEventListener('click', () => {
     if (audio.src) {
@@ -146,7 +189,6 @@ let mp3Encoder;
 let processor;
 let audioChunks = [];
 let recordingUrl = null;
-let audioCtx;
 let audioSourceNode;
 
 recordButton.addEventListener('click', async () => {
@@ -179,7 +221,7 @@ recordButton.addEventListener('click', async () => {
         try {
             // Setup Web Audio API to capture the audio element
             if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                initAudioContext();
                 audioSourceNode = audioCtx.createMediaElementSource(audio);
                 // Connect source to speakers so you can still hear it
                 audioSourceNode.connect(audioCtx.destination);
@@ -284,6 +326,14 @@ if ('serviceWorker' in navigator) {
 
 // --- Core Logic ---
 
+let audioCtx;
+
+function initAudioContext() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+}
+
 function loadAudioFile(file) {
     // Stop previous
     audio.pause();
@@ -293,6 +343,9 @@ function loadAudioFile(file) {
     audio.src = objectUrl;
     currentFileName = file.name;
     fileNameView.textContent = currentFileName;
+    
+    // Reset BPM
+    bpmView.textContent = "--";
 
     // Reset state
     audio.onloadedmetadata = () => {
@@ -303,6 +356,12 @@ function loadAudioFile(file) {
         isLooping = false;
         loopToggle.textContent = "Loop: OFF";
         loopToggle.classList.remove("active");
+        
+        // Reset Speed
+        audio.playbackRate = 1.0;
+        speedBar.value = 1.0;
+        speedValue.textContent = "1.00x";
+
         updateLoopDisplay();
         updateTimeDisplay();
     };
