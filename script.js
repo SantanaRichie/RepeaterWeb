@@ -16,7 +16,7 @@ const timeSigLabel = document.getElementById('timeSigLabel');
 const tapTempoBtn = document.getElementById('tapTempoBtn');
 const playButton = document.getElementById('playButton');
 const pauseButton = document.getElementById('pauseButton');
-const stopButton = document.getElementById('stopButton');
+const resetButton = document.getElementById('resetButton');
 const rewindButton = document.getElementById('rewindButton');
 const forwardButton = document.getElementById('forwardButton');
 const currentTimeView = document.getElementById('currentTimeView');
@@ -35,6 +35,8 @@ const installButton = document.getElementById('installButton');
 const shareButton = document.getElementById('shareButton');
 const helpButton = document.getElementById('helpButton');
 const helpSection = document.getElementById('helpSection');
+const hamburgerBtn = document.getElementById('hamburgerBtn');
+const menuDropdown = document.getElementById('menuDropdown');
 
 // --- Initialization & Event Listeners ---
 
@@ -118,13 +120,25 @@ pauseButton.addEventListener('click', () => {
     }
 });
 
-stopButton.addEventListener('click', () => {
+resetButton.addEventListener('click', () => {
     audio.pause();
-    audio.currentTime = loopStart; // Jump to loop start on stop, similar to Android app
+    audio.currentTime = 0; // Reset to beginning
     playButton.textContent = "Play";
     cancelAnimationFrame(animationFrameId);
     updateTimeDisplay();
     seekBar.value = audio.currentTime;
+
+    // Reset Loop
+    loopStart = 0;
+    loopEnd = audio.duration || 0;
+    isLooping = false;
+    loopToggle.classList.remove("active");
+    updateLoopDisplay();
+
+    // Optional: Reset speed
+    audio.playbackRate = 1.0;
+    speedBar.value = 1.0;
+    speedValue.textContent = "1.00x";
 });
 
 rewindButton.addEventListener('click', () => {
@@ -199,10 +213,8 @@ loopToggle.addEventListener('click', () => {
 
     // Update UI
     if (isLooping) {
-        loopToggle.textContent = "Loop: ON";
         loopToggle.classList.add("active");
     } else {
-        loopToggle.textContent = "Loop: OFF";
         loopToggle.classList.remove("active");
     }
 });
@@ -350,6 +362,11 @@ if ('serviceWorker' in navigator) {
 
 // --- Footer Actions ---
 
+hamburgerBtn.addEventListener('click', () => {
+    const isVisible = menuDropdown.style.display === 'flex';
+    menuDropdown.style.display = isVisible ? 'none' : 'flex';
+});
+
 shareButton.addEventListener('click', () => {
     if (navigator.share) {
         navigator.share({
@@ -361,10 +378,12 @@ shareButton.addEventListener('click', () => {
         navigator.clipboard.writeText(window.location.href);
         alert("Link copied to clipboard!");
     }
+    menuDropdown.style.display = 'none';
 });
 
 helpButton.addEventListener('click', () => {
     helpSection.style.display = helpSection.style.display === 'none' ? 'block' : 'none';
+    menuDropdown.style.display = 'none';
 });
 
 // --- Core Logic ---
@@ -397,7 +416,6 @@ function loadAudioFile(file) {
         loopStart = 0;
         loopEnd = audio.duration;
         isLooping = false;
-        loopToggle.textContent = "Loop: OFF";
         loopToggle.classList.remove("active");
         
         // Reset Speed

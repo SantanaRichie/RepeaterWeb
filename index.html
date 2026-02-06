@@ -10,70 +10,86 @@
 <body>
     <div class="app-container">
         <!-- <h1>Repeater App</h1> -->
-        <img src="repeaterlogo2.png" alt="Repeater Logo" class="logo">
+        <div class="header-container">
+            <img src="repeaterlogo2.png" alt="Repeater Logo" class="logo">
+            <button id="hamburgerBtn" class="hamburger-btn">☰</button>
+            <a href="https://www.buymeacoffee.com/SRichie" target="_blank" class="coffee-btn" aria-label="Buy Me A Coffee">
+                <!-- Coffee Cup Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M18.5 3H6c-1.1 0-2 .9-2 2v5.71c0 3.83 2.95 7.18 6.78 7.29 3.96.12 7.22-3.06 7.22-7v-1h.5c1.93 0 3.5-1.57 3.5-3.5S20.43 3 18.5 3zM16 8.99c0 2.2-1.8 4-4 4s-4-1.8-4-4V5h8v3.99zm2.5-1.99h-1.5v-2h1.5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5zM2 21h20v2H2v-2z"/></svg>
+            </a>
+            
+            <!-- Dropdown Menu -->
+            <div id="menuDropdown" class="menu-dropdown">
+                <button id="shareButton" class="btn full-width">Share</button>
+                <button id="helpButton" class="btn full-width">How to Use</button>
+            </div>
+        </div>
 
         <!-- File Selection -->
-        <div class="section">
-            <label>Selected File:</label>
-            <div id="fileNameView" class="file-name-display">No file selected</div>
-            <input type="file" id="fileInput" accept="audio/*" style="display: none;">
-            <button id="selectFileButton" class="btn full-width">Select Song</button>
-            <div class="meta-info-row" style="margin-top: 10px; display: flex; justify-content: center; align-items: center; font-weight: bold; color: #616161;">
-                <span>BPM: <span id="bpmView" style="color: #d32f2f;">--</span></span>
-                <button id="tapTempoBtn" class="btn" style="margin-left: 15px; padding: 8px 20px; font-size: 14px; width: auto; flex: none;">Tap</button>
-                <div style="margin-left: 15px; display: flex; align-items: center;">
-                    <span id="timeSigLabel" style="margin-right: 6px; font-size: 12px;">4/4</span>
-                    <label class="switch">
-                        <input type="checkbox" id="timeSigToggle">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-            </div>
+        <div id="fileNameView" class="file-name-display">No file selected</div>
+        <input type="file" id="fileInput" accept="audio/*" style="display: none;">
+        <button id="selectFileButton" class="btn full-width" style="margin-bottom: 12px;">Select Song</button>
+
+        <!-- Timeline -->
+        <div class="timeline-container">
+            <span id="currentTimeView">00:00</span>
+            <input type="range" id="seekBar" value="0" min="0" step="0.1" class="seek-bar">
+            <span id="durationView">00:00</span>
         </div>
 
         <!-- Playback Controls -->
-        <div class="controls-row">
+        <div class="controls-row centered">
             <button id="rewindButton" class="btn">-10s</button>
             <button id="playButton" class="btn">Play</button>
             <button id="pauseButton" class="btn">Pause</button>
-            <button id="stopButton" class="btn">Stop</button>
+            <button id="resetButton" class="btn">Reset</button>
             <button id="forwardButton" class="btn">+10s</button>
         </div>
 
-        <!-- Time Display -->
-        <div class="time-info">
-            <div id="currentTimeView">Current: 00:00</div>
-            <div id="durationView">Duration: 00:00</div>
-            <div id="startTimeView">Start: 00:00</div>
-            <div id="endTimeView">End: 00:00</div>
-        </div>
-
-        <!-- Seek Bar -->
-        <input type="range" id="seekBar" value="0" min="0" step="0.1" class="seek-bar">
-
-        <!-- Speed Control -->
-        <div class="section">
-            <label>Playback Speed: <span id="speedValue">1.00x</span></label>
-            <input type="range" id="speedBar" value="1" min="0.25" max="2" step="0.05" class="seek-bar">
-        </div>
-
         <!-- Loop Controls -->
-        <div class="section">
-            <label>Loop Section:</label>
-            <div class="controls-row">
-                <button id="setStartButton" class="btn">Set Start</button>
-                <button id="setEndButton" class="btn">Set End</button>
-                <button id="loopToggle" class="btn toggle-btn">Loop: OFF</button>
+        <label>Looping</label>
+        <div class="loop-container">
+            <div class="loop-row">
+                <div class="loop-group">
+                    <button id="setStartButton" class="btn full-width">Set Start</button>
+                    <span id="startTimeView" class="loop-time">00:00</span>
+                </div>
+                <div class="loop-group">
+                    <button id="setEndButton" class="btn full-width">Set End</button>
+                    <span id="endTimeView" class="loop-time">00:00</span>
+                </div>
+            </div>
+            <button id="loopToggle" class="btn toggle-btn full-width">Loop</button>
+        </div>
+
+        <!-- Tools Grid -->
+        <div class="grid-row">
+            <!-- Speed Control -->
+            <div class="tool-card">
+                <label>Speed: <span id="speedValue" style="color: #fff;">1.00x</span></label>
+                <input type="range" id="speedBar" value="1" min="0.25" max="2" step="0.05" class="seek-bar" style="margin: 0;">
+            </div>
+            
+            <!-- BPM Control -->
+            <div class="tool-card" style="align-items: center;">
+                <div style="display: flex; justify-content: space-between; width: 100%; margin-bottom: 5px;">
+                    <label style="margin:0;">BPM: <span id="bpmView" style="color: #d32f2f;">--</span></label>
+                    <div style="display: flex; align-items: center;">
+                        <span id="timeSigLabel" style="margin-right: 6px; font-size: 10px; color: #888;">4/4</span>
+                        <label class="switch" style="transform: scale(0.8);">
+                            <input type="checkbox" id="timeSigToggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <button id="tapTempoBtn" class="btn full-width" style="padding: 6px; font-size: 12px;">Tap Tempo</button>
             </div>
         </div>
 
-        <!-- Recording Controls -->
-        <div class="section">
-            <label>Recording:</label>
-            <div class="controls-row">
-                <button id="recordButton" class="btn toggle-btn">Record Audio</button>
-                <button id="downloadButton" class="btn" disabled>Download</button>
-            </div>
+        <!-- Recording -->
+        <div class="controls-row">
+            <button id="recordButton" class="btn toggle-btn">Record Loop</button>
+            <button id="downloadButton" class="btn" disabled>Download</button>
         </div>
 
         <!-- Help Section (Hidden) -->
@@ -89,12 +105,6 @@
 
         <!-- Install Button -->
         <button id="installButton" class="btn full-width" style="display: none; margin-top: 10px;">Install As App</button>
-        
-        <div class="controls-row" style="margin-top: 10px;">
-            <button id="shareButton" class="btn">Share</button>
-            <button id="helpButton" class="btn">How to Use</button>
-            <a href="https://www.buymeacoffee.com/SRichie" target="_blank" class="btn" style="display: flex; align-items: center; justify-content: center;">Coffee</a>
-        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
