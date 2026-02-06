@@ -32,6 +32,9 @@ const loopToggle = document.getElementById('loopToggle');
 const recordButton = document.getElementById('recordButton');
 const downloadButton = document.getElementById('downloadButton');
 const installButton = document.getElementById('installButton');
+const shareButton = document.getElementById('shareButton');
+const helpButton = document.getElementById('helpButton');
+const helpSection = document.getElementById('helpSection');
 
 // --- Initialization & Event Listeners ---
 
@@ -344,6 +347,25 @@ if ('serviceWorker' in navigator) {
         .then(() => console.log("Service Worker Registered"))
         .catch((err) => console.error("Service Worker Failed:", err));
 }
+
+// --- Footer Actions ---
+
+shareButton.addEventListener('click', () => {
+    if (navigator.share) {
+        navigator.share({
+            title: 'Repeater Web',
+            text: 'Check out this audio looper app!',
+            url: window.location.href
+        }).catch(console.error);
+    } else {
+        navigator.clipboard.writeText(window.location.href);
+        alert("Link copied to clipboard!");
+    }
+});
+
+helpButton.addEventListener('click', () => {
+    helpSection.style.display = helpSection.style.display === 'none' ? 'block' : 'none';
+});
 
 // --- Core Logic ---
 
