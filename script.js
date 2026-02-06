@@ -11,6 +11,8 @@ const fileNameView = document.getElementById('fileNameView');
 const bpmView = document.getElementById('bpmView');
 const fileInput = document.getElementById('fileInput');
 const selectFileButton = document.getElementById('selectFileButton');
+const timeSigToggle = document.getElementById('timeSigToggle');
+const timeSigLabel = document.getElementById('timeSigLabel');
 const tapTempoBtn = document.getElementById('tapTempoBtn');
 const playButton = document.getElementById('playButton');
 const pauseButton = document.getElementById('pauseButton');
@@ -43,6 +45,21 @@ fileInput.addEventListener('change', (e) => {
     }
 });
 
+// Time Signature Logic
+let beatsPerBar = 4; // Default 4/4
+
+timeSigToggle.addEventListener('change', () => {
+    if (timeSigToggle.checked) {
+        beatsPerBar = 3;
+        timeSigLabel.textContent = "6/8";
+    } else {
+        beatsPerBar = 4;
+        timeSigLabel.textContent = "4/4";
+    }
+    tapTimes = []; // Reset taps
+    bpmView.textContent = "--";
+});
+
 // Tap Tempo Logic
 let tapTimes = [];
 tapTempoBtn.addEventListener('click', (e) => {
@@ -56,12 +73,13 @@ tapTempoBtn.addEventListener('click', (e) => {
     
     tapTimes.push(now);
     
-    // Keep only the last 5 taps for better responsiveness
-    if (tapTimes.length > 5) {
+    // Keep enough taps for the current time signature (beats + 1)
+    const requiredTaps = beatsPerBar + 1;
+    if (tapTimes.length > requiredTaps) {
         tapTimes.shift();
     }
 
-    if (tapTimes.length >= 5) {
+    if (tapTimes.length >= requiredTaps) {
         // Calculate intervals
         let intervals = [];
         for (let i = 1; i < tapTimes.length; i++) {
@@ -71,7 +89,7 @@ tapTempoBtn.addEventListener('click', (e) => {
         const bpm = Math.round(60000 / avgInterval);
         bpmView.textContent = bpm;
     } else {
-        bpmView.textContent = 5 - tapTimes.length;
+        bpmView.textContent = requiredTaps - tapTimes.length;
     }
 });
 
